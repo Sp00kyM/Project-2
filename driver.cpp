@@ -36,6 +36,25 @@ int saveAs(const char * input){
 //DRIVER
 int main(int argc, const char* argv[]){
   Mopen(argv[1]);
+  
+  initscr();
+  keypad(stdscr, true);
+  int brow, bcols;
+  getmaxyx(stdscr, brow, bcols);
+
+  WINDOW* textWin = newwin(brow-2, bcols-10, 1, 5);
+  box(textWin, 0, 0);
+
+  mvwprintw(stdscr, 0, 0, "F1: Menu");
+  mvwprintw(stdscr, 0, bcols/2 - 2, "CSCI 1730 Editor!");
+
+  wrefresh(stdscr);
+  wrefresh(textWin);
+
+  wgetch(textWin);
+  endwin();
+
+  
 }
 
 
