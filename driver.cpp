@@ -21,17 +21,24 @@ int Mopen(const char * input, WINDOW * win){
   fd = open(input, O_RDWR|O_CREAT);
   int bytes_in=read(fd,buffer,BUFF_SIZE);
   hold.resize(bytes_in);
-  int buffplace = 0;
-  for(int i=0; i<hold.size();i++)
+  int fix = 0;
+  for(int i=0; i<hold.size()&& fix<BUFF_SIZE;i++)
     {
-        hold[i] = buffer[i];
+      while((buffer[fix]!='\n')&&fix<BUFF_SIZE){
+            hold[i]+=buffer[fix];
+            fix++;
+      }
+      fix++;
       waddstr(win,hold[i].c_str());
+      waddch(win,'\n');
     }
 }
 //MENU SAVE OPTION
 int Msave(){
   write(fd,buffer,hold.size());
 }
+
+//MENU SAVE AS OPTION
 int MsaveAs(const char* input){
   fd = open(input, O_RDWR|O_CREAT,0666);
   write(fd,buffer,hold.size());
@@ -53,29 +60,38 @@ int main(int argc, const char* argv[]){
   Mopen(argv[1],textWin);
   wrefresh(stdscr);
   wrefresh(textWin);
-
+  scrollok(textWin,TRUE);
   int ch;
   int cursorY, cursorX;
   getyx(textWin, cursorY, cursorX);
   wmove(textWin,0,0);
   //bounds for textbox
   int textrow, textcol;
-  int place = textrow;
   getmaxyx(textWin,textrow,textcol);
+  int place = textrow;
   while(ch = getch()){
     wmove(textWin,cursorY,cursorX);
     if(ch == KEY_UP){
+      if(place >= textrow){
+        place--;
+        place = place - textrow;
+        cursorY++;
+        cursorX=0;
+        wscrl(textWin,-1);
+        mvwaddstr(textWin,cursorY,cursorX,hold[place].c_str());
+        wrefresh(textWin);
+      }
       cursorY--;
       wmove(textWin,cursorY,cursorX);
       wrefresh(textWin);
     }
     else if(ch == KEY_DOWN){
-      place++;
-      if(place > textrow){
+      if(place < hold.size()-1){
+        place++;
         cursorY--;
-        wmove(textWin,textrow,0);
+        cursorX=0;
         wscrl(textWin,1);
-        waddch(textWin,hold[1][1]);
+        mvwaddstr(textWin,cursorY,cursorX,hold[place].c_str());
         wrefresh(textWin);
       }
       cursorY++;
@@ -86,7 +102,7 @@ int main(int argc, const char* argv[]){
       cursorX--;
       wmove(textWin,cursorY,cursorX);
       wrefresh(textWin);
-   }
+    }
     else if(ch==KEY_RIGHT){
       cursorX++;
       wmove(textWin,cursorY,cursorX);
@@ -112,5 +128,6 @@ int main(int argc, const char* argv[]){
       wrefresh(textWin);
     }
     wmove(textWin,cursorY,cursorX);
-  }
+    }
 }
+
