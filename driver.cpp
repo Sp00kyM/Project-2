@@ -45,32 +45,86 @@ int MsaveAs(const char* input){
 }
 int main(int argc, const char* argv[]){
   initscr();
+  bool showMenu = false;
   keypad(stdscr, TRUE);
-  int brow, bcols;
+  int brow, bcols, trow, tcols;
   getmaxyx(stdscr, brow, bcols);
   noecho();
 
+  WINDOW* boxWin = newwin(brow-2, bcols-10, 1, 5);
+  box(boxWin, 0, 0);
+  getmaxyx(boxWin, trow, tcols);
+  WINDOW* textWin = newwin(trow-2, tcols-2, 2, 6);
+  WINDOW* menuWin = newwin(10, 20, trow/2, tcols/2);
   WINDOW* textWin = newwin(brow-2, bcols-10, 1, 5);
   //WINDOW * textWin = newpad(brow-2,bcols-10);
-  box(textWin, 0, 0);
+  box(menuWin, 0, 0);
   keypad(textWin, TRUE);
+  mvwhline(menuWin, 2, 1, 0, 18);
   mvwprintw(stdscr, 0, 0, "F1: Menu");
   mvwprintw(stdscr, 0, bcols/2 - 2, "CSCI 1730 Editor!");
+  displayText(textWin);
 
+  PANEL* menu = new_panel(menuWin);
+  
+  string menuOps[4] = {"Open", "Save", "Save As", "Exit"};
+  int menuChoice;
+  int highlight = 0;
+  
+  mvwprintw(menuWin, 1, 7, "My Menu");
+  
   Mopen(argv[1],textWin);
   wrefresh(stdscr);
   wrefresh(textWin);
+  wrefresh(boxWin);
+  wrefresh(menuWin);
   scrollok(textWin,TRUE);
   int ch;
   int cursorY, cursorX;
   getyx(textWin, cursorY, cursorX);
   wmove(textWin,0,0);
+  hide_panel(menu);
   //bounds for textbox
   int textrow, textcol;
   getmaxyx(textWin,textrow,textcol);
   int place = textrow;
+  update_panels();
+  doupdate();
   while(ch = getch()){
     wmove(textWin,cursorY,cursorX);
+    for(int i = 0; i < 4; i++) {
+      if(i == highlight)
+        wattron(menuWin, A_REVERSE);
+      mvwprintw(menuWin, i+3, 1, menuOps[i].c_str());
+      wattroff(menuWin, A_REVERSE);
+    }
+
+    if(showMenu == true){
+       if(ch == KEY_F(1)){
+        hide_panel(menu);
+        showMenu = false;
+      }
+      switch(ch) {
+      case KEY_UP:
+        highlight--;
+        if(highlight == -1)
+          highlight = 0;
+        break;
+      case KEY_DOWN:
+        highlight++;
+        if(highlight == 4)
+          highlight = 3;
+        break;
+      default:
+        break;
+      }
+    }
+    else {
+      if(ch == KEY_F(1)){
+        show_panel(menu);
+        showMenu = true;
+      }
+    }
     if(ch == KEY_UP){
       if(place >= textrow){
         place--;
@@ -129,5 +183,7 @@ int main(int argc, const char* argv[]){
     }
     wmove(textWin,cursorY,cursorX);
     }
+  update_panels();
+    doupdate();
 }
 
