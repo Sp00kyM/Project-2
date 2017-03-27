@@ -242,13 +242,14 @@ int main(int argc, const char* argv[]){
         wrefresh(textWin);
       }
       else if(ch == KEY_DC || ch == KEY_BACKSPACE || ch == '\b'){
-        cursorX--;
+       cursorX--;
         int Xhold = cursorX;
-        wmove(textWin,cursorY,cursorX);
-        wdelch(textWin);
+        mvwdelch(textWin,cursorY,cursorX);
         char * wholeline = new char[textcol];
         mvwinnstr(textWin,cursorY,0,wholeline,textcol);
-        hold[place-1] = string(wholeline);
+        place--;
+        hold[place] = string(wholeline);
+        place++;
         cursorX = Xhold;
         wmove(textWin,cursorY,cursorX);
         wrefresh(textWin);
@@ -282,7 +283,7 @@ int main(int argc, const char* argv[]){
         //for loop to do shit
         scrollok(textWin,FALSE);
         wmove(textWin, cursorY,0);
-        for(int i = place;i<hold.size();i++){
+        for(int i = place-1;i<hold.size();i++){
           waddstr(textWin,hold[i].c_str());//cstr
           waddch(textWin,'\n');
         }
@@ -291,22 +292,24 @@ int main(int argc, const char* argv[]){
         wprintw(textWin,postenterhold.c_str());//cstr
         wmove(textWin,cursorY,cursorX);
         wrefresh(textWin);
+
       }
       else{
-        cursorX++;
+          cursorX++;
         int Xhold = cursorX;
         cursorX--;
-        char * linegrab = new char[textcol-cursorX];
-        winnstr(textWin,linegrab, textcol-cursorX);
+        char * linegrab = new char[textcol/*-cursorX*/];
+        winnstr(textWin,linegrab, textcol/*-cursorX*/);
         string linehold = linegrab;
-        waddch(tex for(int i=0;i<linehold.size();i++){
+        waddch(textWin,ch);
+        for(int i=0;i<linehold.size();i++){
           cursorX++;
           wmove(textWin, cursorY,cursorX);
           waddch(textWin,linehold[i]);
         }
         char * wholeline = new char[textcol];
         mvwinnstr(textWin,cursorY,0,wholeline,textcol);
-        hold[place-1] = string(wholeline);
+        hold[place] = string(wholeline);
         cursorX = Xhold;
         wmove(textWin,cursorY,cursorX);
         wrefresh(textWin);
